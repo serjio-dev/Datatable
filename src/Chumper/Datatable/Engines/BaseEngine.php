@@ -1,4 +1,6 @@
-<?php namespace Chumper\Datatable\Engines;
+<?php
+
+namespace Chumper\Datatable\Engines;
 
 use Exception;
 use Assetic\Extension\Twig\AsseticFilterFunction;
@@ -6,16 +8,16 @@ use Chumper\Datatable\Columns\DateColumn;
 use Chumper\Datatable\Columns\FunctionColumn;
 use Chumper\Datatable\Columns\TextColumn;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Config;
-
 
 /**
  * Class BaseEngine
  * @package Chumper\Datatable\Engines
  */
-abstract class BaseEngine {
+abstract class BaseEngine
+{
 
     const ORDER_ASC = 'asc';
     const ORDER_DESC = 'desc';
@@ -54,14 +56,14 @@ abstract class BaseEngine {
     /**
      * @var array
      * support for DB::raw fields on where
-     * sburkett - added for column-based exact matching                                                                                                            
-     */                                                                                                                                                            
-    protected $columnSearchExact = array(); 
+     * sburkett - added for column-based exact matching
+     */
+    protected $columnSearchExact = array();
 
     /**
      * @var
      */
-    protected  $sEcho;
+    protected $sEcho;
 
     /**
      * @var \Illuminate\Support\Collection
@@ -71,7 +73,7 @@ abstract class BaseEngine {
     /**
      * @var array
      */
-    protected  $searchColumns = array();
+    protected $searchColumns = array();
 
     /**
      * @var array
@@ -81,7 +83,7 @@ abstract class BaseEngine {
     /**
      * @var array
      */
-    protected  $orderColumns = array();
+    protected $orderColumns = array();
 
     /**
      * @var int
@@ -123,12 +125,11 @@ abstract class BaseEngine {
      */
     protected $exactWordSearch = false;
 
-
     function __construct()
     {
         $this->columns = new Collection();
         $this->config = Config::get('chumper.datatable.engine');
-        $this->setExactWordSearch( $this->config['exactWordSearch'] );
+        $this->setExactWordSearch($this->config['exactWordSearch']);
         return $this;
     }
 
@@ -138,21 +139,16 @@ abstract class BaseEngine {
      */
     public function addColumn()
     {
-        if(func_num_args() != 2 && func_num_args() != 1)
+        if (func_num_args() != 2 && func_num_args() != 1)
             throw new Exception('Invalid number of arguments');
 
-        if(func_num_args() == 1)
-        {
+        if (func_num_args() == 1) {
             //add a predefined column
             $this->columns->put(func_get_arg(0)->getName(), func_get_arg(0));
-        }
-        else if(is_callable(func_get_arg(1)))
-        {
+        } else if (is_callable(func_get_arg(1))) {
             $this->columns->put(func_get_arg(0), new FunctionColumn(func_get_arg(0), func_get_arg(1)));
-        }
-        else
-        {
-            $this->columns->put(func_get_arg(0), new TextColumn(func_get_arg(0),func_get_arg(1)));
+        } else {
+            $this->columns->put(func_get_arg(0), new TextColumn(func_get_arg(0), func_get_arg(1)));
         }
         return $this;
     }
@@ -163,7 +159,7 @@ abstract class BaseEngine {
      */
     public function getColumn($name)
     {
-        return $this->columns->get($name,null);
+        return $this->columns->get($name, null);
     }
 
     /**
@@ -205,20 +201,21 @@ abstract class BaseEngine {
      */
     public function showColumns($cols)
     {
-        if ( ! is_array($cols)) {
+        if (!is_array($cols)) {
             $cols = func_get_args();
         }
 
         foreach ($cols as $property) {
             //quick fix for created_at and updated_at columns
-            if(in_array($property, array('created_at', 'updated_at')))
-            {
+            if (in_array($property, array('created_at', 'updated_at'))) {
                 $this->columns->put($property, new DateColumn($property, DateColumn::DAY_DATE));
-            }
-            else
-            {
-                $this->columns->put($property, new FunctionColumn($property, function($model) use($property){
-                    try{return is_array($model)?$model[$property]:$model->$property;}catch(Exception $e){return null;}    
+            } else {
+                $this->columns->put($property, new FunctionColumn($property, function ($model) use ($property) {
+                    try {
+                        return is_array($model) ? $model[$property] : $model->$property;
+                    } catch (Exception $e) {
+                        return null;
+                    }
                 }));
             }
             $this->showColumns[] = $property;
@@ -250,7 +247,7 @@ abstract class BaseEngine {
      */
     public function searchColumns($cols)
     {
-        if ( ! is_array($cols)) {
+        if (!is_array($cols)) {
             $cols = func_get_args();
         }
 
@@ -265,7 +262,7 @@ abstract class BaseEngine {
      */
     public function orderColumns($cols)
     {
-        if ( ! is_array($cols)) {
+        if (!is_array($cols)) {
             $cols = func_get_args();
         }
 
@@ -317,17 +314,17 @@ abstract class BaseEngine {
         $this->exactWordSearch = $value;
         return $this;
     }
-    
+
     /**
      * @param $columnNames Sets up a lookup table for which columns should use exact matching -sburkett
      * @return $this
      */
     public function setExactMatchColumns($columnNames)
     {
-      foreach($columnNames as $columnIndex)
-        $this->columnSearchExact[ $columnIndex ] = true;
+        foreach ($columnNames as $columnIndex)
+            $this->columnSearchExact[$columnIndex] = true;
 
-      return $this;
+        return $this;
     }
 
     public function getRowClass()
@@ -387,44 +384,36 @@ abstract class BaseEngine {
         $this->search($value);
     }
 
-
     /**
      * @param $value
      */
     protected function handleiSortCol_0($value)
     {
-        if(Input::get('sSortDir_0') == 'desc')
+        if (Request::get('sSortDir_0') == 'desc')
             $direction = BaseEngine::ORDER_DESC;
         else
             $direction = BaseEngine::ORDER_ASC;
 
         //check if order is allowed
-        if(empty($this->orderColumns))
-        {
+        if (empty($this->orderColumns)) {
             $this->order(array(0 => $value, 1 => $this->getNameByIndex($value)), $direction);
             return;
         }
 
         //prepare order array
         $cleanNames = array();
-        foreach($this->orderColumns as $c)
-        {
-            if(strpos($c,':') !== FALSE)
-            {
-                $cleanNames[] = substr($c, 0, strpos($c,':'));
-            }
-            else
-            {
+        foreach ($this->orderColumns as $c) {
+            if (strpos($c, ':') !== FALSE) {
+                $cleanNames[] = substr($c, 0, strpos($c, ':'));
+            } else {
                 $cleanNames[] = $c;
             }
         }
 
         $i = 0;
-        foreach($this->columns as $name => $column)
-        {
-            if($i == $value && in_array($name, $cleanNames))
-            {
-                $this->order(array(0 => $value, 1 => $this->orderColumns[array_search($name,$cleanNames)]), $direction);
+        foreach ($this->columns as $name => $column) {
+            if ($i == $value && in_array($name, $cleanNames)) {
+                $this->order(array(0 => $value, 1 => $this->orderColumns[array_search($name, $cleanNames)]), $direction);
                 return;
             }
             $i++;
@@ -453,17 +442,16 @@ abstract class BaseEngine {
     protected function handleInputs()
     {
         //Handle all inputs magically
-        foreach (Input::all() as $key => $input) {
+        foreach (Request::all() as $key => $input) {
 
             // handle single column search
-            if ($this->isParameterForSingleColumnSearch($key))
-            {
-                $columnIndex = str_replace('sSearch_','',$key);
+            if ($this->isParameterForSingleColumnSearch($key)) {
+                $columnIndex = str_replace('sSearch_', '', $key);
                 $this->handleSingleColumnSearch($columnIndex, $input);
                 continue;
             }
 
-            if(method_exists($this, $function = 'handle'.$key))
+            if (method_exists($this, $function = 'handle' . $key))
                 $this->$function($input);
         }
     }
@@ -481,7 +469,7 @@ abstract class BaseEngine {
 
     protected function prepareSearchColumns()
     {
-        if(count($this->searchColumns) == 0 || empty($this->searchColumns))
+        if (count($this->searchColumns) == 0 || empty($this->searchColumns))
             $this->searchColumns = $this->showColumns;
     }
 
@@ -532,10 +520,8 @@ abstract class BaseEngine {
     public function getNameByIndex($index)
     {
         $i = 0;
-        foreach($this->columns as $name => $col)
-        {
-            if($index == $i)
-            {
+        foreach ($this->columns as $name => $col) {
+            if ($index == $i) {
                 return $name;
             }
             $i++;
@@ -548,6 +534,8 @@ abstract class BaseEngine {
     }
 
     abstract protected function totalCount();
+
     abstract protected function count();
+
     abstract protected function internalMake(Collection $columns, array $searchColumns = array());
 }

@@ -1,7 +1,9 @@
-<?php namespace Chumper\Datatable\Columns;
+<?php
 
-class FunctionColumn extends BaseColumn {
+namespace Chumper\Datatable\Columns;
 
+class FunctionColumn extends BaseColumn
+{
     private $callable;
 
     function __construct($name, $callable)
@@ -12,6 +14,6 @@ class FunctionColumn extends BaseColumn {
 
     public function run($model)
     {
-        return call_user_func($this->callable,$model);
+        return call_user_func($this->callable, $model);
     }
 }

@@ -1,7 +1,9 @@
-<?php namespace Chumper\Datatable\Columns;
+<?php
 
-class DateColumn extends BaseColumn {
+namespace Chumper\Datatable\Columns;
 
+class DateColumn extends BaseColumn
+{
     /**
      * Constants for the time representation
      */
@@ -38,30 +40,28 @@ class DateColumn extends BaseColumn {
     public function run($model)
     {
 
-        if(is_string(is_array($model) ? $model[$this->name]: $model->{$this->name}))
-        {
-            return is_array($model) ? $model[$this->name]: $model->{$this->name};
+        if (is_string(is_array($model) ? $model[$this->name] : $model->{$this->name})) {
+            return is_array($model) ? $model[$this->name] : $model->{$this->name};
         }
 
-        switch($this->format)
-        {
+        switch ($this->format) {
             case DateColumn::DATE:
-                return is_array($model) ? $model[$this->name]->toDateString(): $model->{$this->name}->toDateString();
+                return is_array($model) ? $model[$this->name]->toDateString() : $model->{$this->name}->toDateString();
                 break;
             case DateColumn::TIME:
-                return is_array($model) ? $model[$this->name]->toTimeString(): $model->{$this->name}->toTimeString();
+                return is_array($model) ? $model[$this->name]->toTimeString() : $model->{$this->name}->toTimeString();
                 break;
             case DateColumn::DATE_TIME:
-                return is_array($model) ? $model[$this->name]->toDateTimeString(): $model->{$this->name}->toDateTimeString();
+                return is_array($model) ? $model[$this->name]->toDateTimeString() : $model->{$this->name}->toDateTimeString();
                 break;
             case DateColumn::CUSTOM:
-                return is_array($model) ? $model[$this->name]->format($this->custom): $model->{$this->name}->format($this->custom);
+                return is_array($model) ? $model[$this->name]->format($this->custom) : $model->{$this->name}->format($this->custom);
                 break;
             case DateColumn::FORMATTED_DATE:
-                return is_array($model) ? $model[$this->name]->toFormattedDateString(): $model->{$this->name}->toFormattedDateString();
+                return is_array($model) ? $model[$this->name]->toFormattedDateString() : $model->{$this->name}->toFormattedDateString();
                 break;
             case DateColumn::DAY_DATE:
-                return is_array($model) ? $model[$this->name]->toDayDateTimeString(): $model->{$this->name}->toDayDateTimeString();
+                return is_array($model) ? $model[$this->name]->toDayDateTimeString() : $model->{$this->name}->toDayDateTimeString();
                 break;
 
         }

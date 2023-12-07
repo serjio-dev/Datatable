@@ -1,4 +1,6 @@
-<?php namespace Chumper\Datatable;
+<?php
+
+namespace Chumper\Datatable;
 
 use Exception;
 use Illuminate\Support\Facades\Request;
@@ -9,7 +11,8 @@ use Illuminate\Support\Facades\Config;
  * Class Table
  * @package Chumper\Datatable
  */
-class Table {
+class Table
+{
 
     /**
      * @var array
@@ -82,40 +85,33 @@ class Table {
     {
         $this->config = Config::get('chumper.datatable.table');
 
-        $this->setId( $this->config['id'] );
-        $this->setClass( $this->config['class'] );
-        $this->setOptions( $this->config['options'] );
-        $this->setCallbacks( $this->config['callbacks'] );
+        $this->setId($this->config['id']);
+        $this->setClass($this->config['class']);
+        $this->setOptions($this->config['options']);
+        $this->setCallbacks($this->config['callbacks']);
 
         $this->noScript = $this->config['noScript'];
         $this->table_view = $this->config['table_view'];
         $this->script_view = $this->config['script_view'];
     }
 
-
     /**
      * @return $this
      */
     public function addColumn()
     {
-        foreach (func_get_args() as $title)
-        {
-            if(is_array($title))
-            {
-                foreach ($title as $mapping => $arrayTitle)
-                {
+        foreach (func_get_args() as $title) {
+            if (is_array($title)) {
+                foreach ($title as $mapping => $arrayTitle) {
                     $this->columns[] = $arrayTitle;
                     $this->aliasColumns[] = $mapping;
-                    if(is_string($mapping))
-                    {
+                    if (is_string($mapping)) {
                         $this->createdMapping = false;
                     }
                 }
-            }
-            else
-            {
+            } else {
                 $this->columns[] = $title;
-                $this->aliasColumns[] = count($this->aliasColumns)+1;
+                $this->aliasColumns[] = count($this->aliasColumns) + 1;
             }
         }
         return $this;
@@ -134,7 +130,7 @@ class Table {
      */
     public function removeOption($key)
     {
-        if(isset($this->options[$key])) unset($this->options[$key]);
+        if (isset($this->options[$key])) unset($this->options[$key]);
         return $this;
     }
 
@@ -144,18 +140,13 @@ class Table {
      */
     public function setOptions()
     {
-        if(func_num_args() == 2)
-        {
-           $this->options[func_get_arg(0)] =func_get_arg(1);
-        }
-        else if(func_num_args() == 1 && is_array(func_get_arg(0)))
-        {
-            foreach (func_get_arg(0) as $key => $option)
-            {
+        if (func_num_args() == 2) {
+            $this->options[func_get_arg(0)] = func_get_arg(1);
+        } else if (func_num_args() == 1 && is_array(func_get_arg(0))) {
+            foreach (func_get_arg(0) as $key => $option) {
                 $this->options[$key] = $option;
             }
-        }
-        else
+        } else
             throw new Exception('Invalid number of options provided for the method "setOptions"');
         return $this;
     }
@@ -167,8 +158,7 @@ class Table {
     public function setOrder($order = array())
     {
         $_orders = array();
-        foreach ($order as $number => $sort)
-        {
+        foreach ($order as $number => $sort) {
             $_orders[] = [$number, $sort];
         }
 
@@ -182,18 +172,13 @@ class Table {
      */
     public function setCallbacks()
     {
-        if(func_num_args() == 2)
-        {
+        if (func_num_args() == 2) {
             $this->callbacks[func_get_arg(0)] = func_get_arg(1);
-        }
-        else if(func_num_args() == 1 && is_array(func_get_arg(0)))
-        {
-            foreach (func_get_arg(0) as $key => $value)
-            {
+        } else if (func_num_args() == 1 && is_array(func_get_arg(0))) {
+            foreach (func_get_arg(0) as $key => $value) {
                 $this->callbacks[$key] = $value;
             }
-        }
-        else
+        } else
             throw new Exception('Invalid number of callbacks provided for the method "setCallbacks"');
 
         return $this;
@@ -205,18 +190,13 @@ class Table {
      */
     public function setCustomValues()
     {
-        if(func_num_args() == 2)
-        {
+        if (func_num_args() == 2) {
             $this->customValues[func_get_arg(0)] = func_get_arg(1);
-        }
-        else if(func_num_args() == 1 && is_array(func_get_arg(0)))
-        {
-            foreach (func_get_arg(0) as $key => $value)
-            {
+        } else if (func_num_args() == 1 && is_array(func_get_arg(0))) {
+            foreach (func_get_arg(0) as $key => $value) {
                 $this->customValues[$key] = $value;
             }
-        }
-        else
+        } else
             throw new Exception('Invalid number of custom values provided for the method "setCustomValues"');
 
         return $this;
@@ -281,36 +261,34 @@ class Table {
      */
     public function render($view = null)
     {
-        if( ! is_null($view))
+        if (!is_null($view))
             $this->table_view = $view;
 
         return View::make($this->table_view, $this->getViewParameters());
     }
-    
+
     /**
      * returns an array with the parameters that will be passed to the view when it's rendered
      * @return array
      */
     public function getViewParameters()
     {
-        if(!isset($this->options['sAjaxSource']))
-        {
+        if (!isset($this->options['sAjaxSource'])) {
             $this->setUrl(Request::url());
         }
 
         // create mapping for frontend
-        if(!$this->createdMapping)
-        {
+        if (!$this->createdMapping) {
             $this->createMapping();
         }
         return array(
             'options' => $this->convertData(array_merge($this->options, $this->callbacks)),
-            'values'    => $this->customValues,
-            'data'      => $this->data,
-            'columns'   => array_combine($this->aliasColumns,$this->columns),
-            'noScript'  => $this->noScript,
-            'id'        => $this->idName,
-            'class'     => $this->className,
+            'values' => $this->customValues,
+            'data' => $this->data,
+            'columns' => array_combine($this->aliasColumns, $this->columns),
+            'noScript' => $this->noScript,
+            'id' => $this->idName,
+            'class' => $this->className,
         );
     }
 
@@ -325,60 +303,60 @@ class Table {
         return $this;
     }
 
-	private function convertData($options) {
-		$is_obj = false;
-		$first = true;
-		$data = "";
-		foreach ($options as $k => $o) {
-			if ($first == true) {
-				if (!is_numeric($k)) {
-					$is_obj = true;
-				}
-				$first = false;
-			} else {
-				$data .= ",\n";
-			}
-			if (!is_numeric($k)) {
-				$data .= json_encode($k) . ":";
-			}
-			if (is_string($o)) {
-				if (@preg_match("#^\s*function\s*\([^\)]*#", $o)) {
-					$data .= $o;
-				} else {
-					$data .= json_encode($o);
-				}
-			} else {
-				if (is_array($o)) {
-					$data .= $this->convertData($o);
-				} else {
-					$data .= json_encode($o);
-				}
-			}
-		}
+    private function convertData($options)
+    {
+        $is_obj = false;
+        $first = true;
+        $data = "";
+        foreach ($options as $k => $o) {
+            if ($first == true) {
+                if (!is_numeric($k)) {
+                    $is_obj = true;
+                }
+                $first = false;
+            } else {
+                $data .= ",\n";
+            }
+            if (!is_numeric($k)) {
+                $data .= json_encode($k) . ":";
+            }
+            if (is_string($o)) {
+                if (@preg_match("#^\s*function\s*\([^\)]*#", $o)) {
+                    $data .= $o;
+                } else {
+                    $data .= json_encode($o);
+                }
+            } else {
+                if (is_array($o)) {
+                    $data .= $this->convertData($o);
+                } else {
+                    $data .= json_encode($o);
+                }
+            }
+        }
 
-		if ($is_obj) {
-			$data = "{ $data }";
-		} else {
-			$data = "[ $data ]";
-		}
+        if ($is_obj) {
+            $data = "{ $data }";
+        } else {
+            $data = "[ $data ]";
+        }
 
-		return $data;
-	}
+        return $data;
+    }
 
     public function script($view = null)
     {
-        if( ! is_null($view))
+        if (!is_null($view))
             $this->script_view = $view;
 
         // create mapping for frontend
-        if(!$this->createdMapping)
-        {
+        if (!$this->createdMapping) {
             $this->createMapping();
         }
 
-        return View::make($this->script_view,array(
+        return View::make($this->script_view, array(
             'options' => $this->convertData(array_merge($this->options, $this->callbacks)),
-            'id'        =>  $this->idName,
+            'id' => $this->idName,
         ));
     }
 
@@ -389,7 +367,7 @@ class Table {
 
     public function setId($id = '')
     {
-        $this->idName = empty($id)? str_random(8) : $id;
+        $this->idName = empty($id) ? str_random(8) : $id;
         return $this;
     }
 
@@ -416,20 +394,15 @@ class Table {
     {
         // set options for better handling
         // merge with existing options
-        if(!array_key_exists('aoColumns', $this->options))
-        {
+        if (!array_key_exists('aoColumns', $this->options)) {
             $this->options['aoColumns'] = array();
         }
         $matching = array();
         $i = 0;
-        foreach($this->aliasColumns as $name)
-        {
-            if(array_key_exists($i,$this->options['aoColumns']))
-            {
-                $this->options['aoColumns'][$i] = array_merge_recursive($this->options['aoColumns'][$i],array('mData' => $name));
-            }
-            else
-            {
+        foreach ($this->aliasColumns as $name) {
+            if (array_key_exists($i, $this->options['aoColumns'])) {
+                $this->options['aoColumns'][$i] = array_merge_recursive($this->options['aoColumns'][$i], array('mData' => $name));
+            } else {
                 $this->options['aoColumns'][$i] = array('mData' => $name);
             }
             $i++;
